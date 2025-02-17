@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include <iostream>
+#include <fstream>
 #include <cstdlib> // Para gerar números aleatórios
 #include <ctime>   // Para usar o tempo atual como semente para números aleatórios
 
@@ -21,6 +22,19 @@ void ler_dados(float &temperatura, float &umidade) {
     umidade = 50 + (rand() % 20);     // Umidade entre 50% e 70%
 }
 
+// Função para salvar os dados em um arquivo
+void salvar_dados(float temperatura, float umidade) {
+    // Abre o arquivo (se não existir, será criado)
+    std::ofstream arquivo("dados.txt", std::ios::app);  // 'app' para adicionar ao arquivo existente
+    if (arquivo.is_open()) {
+        // Escreve os dados no arquivo
+        arquivo << "Temperatura: " << temperatura << "°C, Umidade: " << umidade << "%" << std::endl;
+        arquivo.close();  // Fecha o arquivo
+    } else {
+        std::cerr << "Erro ao abrir o arquivo para escrita!" << std::endl;
+    }
+}
+
 int main() {
     // Inicializa o pino do buzzer
     gpio_init(buzzerPin);
@@ -38,6 +52,9 @@ int main() {
 
         // Exibe os dados na tela
         std::cout << "Temperatura: " << temperatura << "°C, Umidade: " << umidade << "%" << std::endl;
+
+        // Salva os dados no arquivo
+        salvar_dados(temperatura, umidade);
 
         // Emite o som do buzzer
         beep();
