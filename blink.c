@@ -1,53 +1,50 @@
-/**
- * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 #include "pico/stdlib.h"
+#include <iostream>
+#include <cstdlib> // Para gerar números aleatórios
+#include <ctime>   // Para usar o tempo atual como semente para números aleatórios
 
-// Pico W devices use a GPIO on the WIFI chip for the LED,
-// so when building for Pico W, CYW43_WL_GPIO_LED_PIN will be defined
-#ifdef CYW43_WL_GPIO_LED_PIN
-#include "pico/cyw43_arch.h"
-#endif
+// Definir o pino do buzzer
+const uint buzzerPin = 15;  // Conecte o buzzer ao pino 15
 
-#ifndef LED_DELAY_MS
-#define LED_DELAY_MS 250
-#endif
-
-// Perform initialisation
-int pico_led_init(void) {
-#if defined(PICO_DEFAULT_LED_PIN)
-    // A device like Pico that uses a GPIO for the LED will define PICO_DEFAULT_LED_PIN
-    // so we can use normal GPIO functionality to turn the led on and off
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    return PICO_OK;
-#elif defined(CYW43_WL_GPIO_LED_PIN)
-    // For Pico W devices we need to initialise the driver etc
-    return cyw43_arch_init();
-#endif
+// Função para simular um "bip" do buzzer
+void beep() {
+    gpio_put(buzzerPin, 1);  // Liga o buzzer
+    sleep_ms(100);            // Mantém ligado por 100ms
+    gpio_put(buzzerPin, 0);  // Desliga o buzzer
+    sleep_ms(100);            // Aguarda 100ms antes de permitir outro bip
 }
 
-// Turn the led on or off
-void pico_set_led(bool led_on) {
-#if defined(PICO_DEFAULT_LED_PIN)
-    // Just set the GPIO on or off
-    gpio_put(PICO_DEFAULT_LED_PIN, led_on);
-#elif defined(CYW43_WL_GPIO_LED_PIN)
-    // Ask the wifi "driver" to set the GPIO on or off
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_on);
-#endif
+// Função para simular leitura de dados (temperatura e umidade)
+void ler_dados(float &temperatura, float &umidade) {
+    // Simula dados de temperatura e umidade aleatórios
+    temperatura = 25 + (rand() % 5);  // Temperatura entre 25 e 30°C
+    umidade = 50 + (rand() % 20);     // Umidade entre 50% e 70%
 }
 
 int main() {
-    int rc = pico_led_init();
-    hard_assert(rc == PICO_OK);
+    // Inicializa o pino do buzzer
+    gpio_init(buzzerPin);
+    gpio_set_dir(buzzerPin, GPIO_OUT);
+
+    // Semente para a função rand() para gerar números aleatórios baseados no tempo
+    srand(time(NULL));
+
+    // Variáveis para armazenar os dados simulados
+    float temperatura, umidade;
+
     while (true) {
-        pico_set_led(true);
-        sleep_ms(LED_DELAY_MS);
-        pico_set_led(false);
-        sleep_ms(LED_DELAY_MS);
+        // Simula a leitura de dados
+        ler_dados(temperatura, umidade);
+
+        // Exibe os dados na tela
+        std::cout << "Temperatura: " << temperatura << "°C, Umidade: " << umidade << "%" << std::endl;
+
+        // Emite o som do buzzer
+        beep();
+
+        // Aguarda 2 segundos antes de gerar novos dados
+        sleep_ms(2000);
     }
+
+    return 0;
 }
