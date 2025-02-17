@@ -1,1 +1,1 @@
-# Raspberry_pi
+#  Registro de dados de temperatura e umidade
